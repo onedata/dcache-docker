@@ -6,12 +6,21 @@ then
   exit 1
 fi
 
+ASPECT_V=1.8.8
 export CLASSPATH=/usr/share/dcache/classes/*
 h=`hostname`
 
-LOG=/var/log/dcache/$1-${h}.log
+DOMAIN=$1
+if [ -t 0 ]
+then
+  LOG=/dev/stdout
+else
+  LOG=/var/log/dcache/${DOMAIN}.log
+fi
 
-dhome=/usr/share/dcache
+DHOME=/usr/share/dcache
+
+cd ${DHOME}
 
 /usr/bin/java -server \
 	-Xmx512m -XX:MaxDirectMemorySize=512m \
@@ -26,10 +35,10 @@ dhome=/usr/share/dcache
 	-Djavax.security.auth.useSubjectCredsOnly=false \
 	-Djava.security.auth.login.config=/etc/dcache/gss.conf \
 	-XX:+HeapDumpOnOutOfMemoryError \
-	-XX:HeapDumpPath=/var/log/dcache/$1-${h}-oom.hprof \
+	-XX:HeapDumpPath=/var/log/dcache/${DOMAIN}-oom.hprof \
 	-XX:+UseCompressedOops \
-	-javaagent:/usr/share/dcache/classes/aspectjweaver-1.8.8.jar \
+	-javaagent:/usr/share/dcache/classes/aspectjweaver-${ASPECT_V}.jar \
 	-Djava.awt.headless=true -DwantLog4jSetup=n \
-	-Ddcache.home=${dhome} \
-	-Ddcache.paths.defaults=${dhome}/defaults \
-	org.dcache.boot.BootLoader start ${1}-${h} > ${LOG} 2>&1
+	-Ddcache.home=${DHOME} \
+	-Ddcache.paths.defaults=${DHOME}/defaults \
+	org.dcache.boot.BootLoader start ${DOMAIN} > ${LOG} 2>&1
