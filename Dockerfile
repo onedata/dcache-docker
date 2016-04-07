@@ -32,7 +32,7 @@ RUN mkdir /var/lib/dcache/pool && chown dcache:dcache /var/lib/dcache/pool
 VOLUME /var/lib/dcache/pool
 
 # expose TCP ports for network services
-EXPOSE 22125 2049
+EXPOSE 2288 22125 2049
 
 ENTRYPOINT ["/etc/dcache/run.sh"]
 
