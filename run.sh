@@ -16,8 +16,10 @@ else
   LOG=/var/log/dcache/${DOMAIN}.log
 fi
 
-ASPECT_AGENT=`ls /usr/share/dcache/classes/aspectjweaver-*.jar`
 DCACHE_HOME=/usr/share/dcache
+
+# we hope that there is only one agent file and it the right one
+ASPECT_AGENT=`ls ${DCACHE_HOME}/classes/aspectjweaver-*.jar`
 
 /usr/bin/java -server \
 	-Xmx512m -XX:MaxDirectMemorySize=512m \
