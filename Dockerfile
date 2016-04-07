@@ -1,8 +1,3 @@
-#
-# to run:
-#  docker run -dt -v /tmp/log:/var/log/dcache -v `pwd`/docker-layout.conf:/etc/dcache/layouts/docker-layout.conf -p 22125:22125 local/dcache-upstream dcap
-#
-
 # Based on CentOS 7
 FROM centos:7
 
