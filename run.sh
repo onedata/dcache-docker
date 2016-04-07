@@ -8,7 +8,6 @@ fi
 
 ASPECT_V=1.8.8
 export CLASSPATH=/usr/share/dcache/classes/*
-h=`hostname`
 
 DOMAIN=$1
 if [ -t 0 ]
@@ -18,9 +17,7 @@ else
   LOG=/var/log/dcache/${DOMAIN}.log
 fi
 
-DHOME=/usr/share/dcache
-
-cd ${DHOME}
+DCACHE_HOME=/usr/share/dcache
 
 /usr/bin/java -server \
 	-Xmx512m -XX:MaxDirectMemorySize=512m \
@@ -39,6 +36,6 @@ cd ${DHOME}
 	-XX:+UseCompressedOops \
 	-javaagent:/usr/share/dcache/classes/aspectjweaver-${ASPECT_V}.jar \
 	-Djava.awt.headless=true -DwantLog4jSetup=n \
-	-Ddcache.home=${DHOME} \
-	-Ddcache.paths.defaults=${DHOME}/defaults \
+	-Ddcache.home=${DCACHE_HOME} \
+	-Ddcache.paths.defaults=${DCACHE_HOME}/defaults \
 	org.dcache.boot.BootLoader start ${DOMAIN} > ${LOG} 2>&1
