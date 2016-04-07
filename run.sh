@@ -6,7 +6,6 @@ then
   exit 1
 fi
 
-ASPECT_V=1.8.8
 export CLASSPATH=/usr/share/dcache/classes/*
 
 DOMAIN=$1
@@ -17,6 +16,7 @@ else
   LOG=/var/log/dcache/${DOMAIN}.log
 fi
 
+ASPECT_AGENT=`ls /usr/share/dcache/classes/aspectjweaver-*.jar`
 DCACHE_HOME=/usr/share/dcache
 
 /usr/bin/java -server \
@@ -34,7 +34,7 @@ DCACHE_HOME=/usr/share/dcache
 	-XX:+HeapDumpOnOutOfMemoryError \
 	-XX:HeapDumpPath=/var/log/dcache/${DOMAIN}-oom.hprof \
 	-XX:+UseCompressedOops \
-	-javaagent:/usr/share/dcache/classes/aspectjweaver-${ASPECT_V}.jar \
+	-javaagent:${ASPECT_AGENT} \
 	-Djava.awt.headless=true -DwantLog4jSetup=n \
 	-Ddcache.home=${DCACHE_HOME} \
 	-Ddcache.paths.defaults=${DCACHE_HOME}/defaults \
