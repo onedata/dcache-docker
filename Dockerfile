@@ -3,13 +3,15 @@ FROM centos:7
 
 MAINTAINER dCache "https://www.dcache.org"
 
-
-# accept RPM to be used from the command line
-ARG rpm=https://www.dcache.org/downloads/1.9/repo/2.15/dcache-2.15.3-1.noarch.rpm
-
 # install required packages
 RUN yum -y -q install java-1.8.0-openjdk-headless
-RUN yum -y -q install ${rpm}
+
+# accept RPM to be used from the command line
+ARG rpm_location=https://www.dcache.org/downloads/1.9/repo/2.15/dcache-2.15.3-1.noarch.rpm
+
+# copy rpm into and install
+ADD ${rpm_location} /dcache.rpm
+RUN yum -y -q install /dcache.rpm && rm /dcache.rpm
 
 # fix liquibase
 RUN rm /usr/share/dcache/classes/liquibase-core-*.jar
