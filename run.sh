@@ -6,7 +6,6 @@ then
   exit 1
 fi
 
-export CLASSPATH=/usr/share/dcache/classes/*
 
 DOMAIN=$1
 if [ -t 0 ]
@@ -17,6 +16,7 @@ else
 fi
 
 DCACHE_HOME=/usr/share/dcache
+export CLASSPATH=${DCACHE_HOME}/classes/*
 
 # we hope that there is only one agent file and it the right one
 ASPECT_AGENT=`ls ${DCACHE_HOME}/classes/aspectjweaver-*.jar`
