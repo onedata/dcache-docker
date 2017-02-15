@@ -12,14 +12,14 @@ if [ -t 0 ]
 then
   LOG=/dev/stdout
 else
-  LOG=/var/log/dcache/${DOMAIN}.log
+  LOG=${DCACHE_INSTALL_DIR}/var/log/${DOMAIN}.log
 fi
 
-DCACHE_HOME=/usr/share/dcache
-export CLASSPATH=${DCACHE_HOME}/classes/*
+DCACHE_HOME=${DCACHE_INSTALL_DIR}
+export CLASSPATH=${DCACHE_HOME}/share/classes/*
 
 # we hope that there is only one agent file and it the right one
-ASPECT_AGENT=`ls ${DCACHE_HOME}/classes/aspectjweaver-*.jar`
+ASPECT_AGENT=`ls ${DCACHE_HOME}/share/classes/aspectjweaver-*.jar`
 
 /usr/bin/java -server \
 	-Xmx512m -XX:MaxDirectMemorySize=512m \
@@ -32,12 +32,12 @@ ASPECT_AGENT=`ls ${DCACHE_HOME}/classes/aspectjweaver-*.jar`
 	-Djava.security.krb5.realm= \
 	-Djava.security.krb5.kdc= \
 	-Djavax.security.auth.useSubjectCredsOnly=false \
-	-Djava.security.auth.login.config=/etc/dcache/gss.conf \
+	-Djava.security.auth.login.config=${DCACHE_INSTALL_DIR}/etc/gss.conf \
 	-XX:+HeapDumpOnOutOfMemoryError \
-	-XX:HeapDumpPath=/var/log/dcache/${DOMAIN}-oom.hprof \
+	-XX:HeapDumpPath=${DCACHE_INSTALL_DIR}/var/log/${DOMAIN}-oom.hprof \
 	-XX:+UseCompressedOops \
 	-javaagent:${ASPECT_AGENT} \
 	-Djava.awt.headless=true -DwantLog4jSetup=n \
 	-Ddcache.home=${DCACHE_HOME} \
-	-Ddcache.paths.defaults=${DCACHE_HOME}/defaults \
+	-Ddcache.paths.defaults=${DCACHE_HOME}/share/defaults \
 	org.dcache.boot.BootLoader start ${DOMAIN} > ${LOG} 2>&1

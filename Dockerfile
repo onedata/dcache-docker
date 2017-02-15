@@ -1,40 +1,58 @@
-# Based on CentOS 7
-FROM centos:7
-
+# Minimalistic Java image
+FROM alpine:3.4
 MAINTAINER dCache "https://www.dcache.org"
 
-# install required packages
-RUN yum -y -q install java-1.8.0-openjdk-headless
+ARG VERSION
+# dCache version placeholder
+ENV DCACHE_VERSION=${VERSION}
+ENV DCACHE_INSTALL_DIR=/opt/dcache-${DCACHE_VERSION}
 
-# accept RPM to be used from the command line
-ARG rpm_location=https://www.dcache.org/downloads/1.9/repo/2.15/dcache-2.15.3-1.noarch.rpm
+# Add JRE
+RUN apk --update add openjdk8-jre
 
-# copy rpm into and install
-ADD ${rpm_location} /dcache.rpm
-RUN yum -y -q install /dcache.rpm && rm /dcache.rpm
+# Add dCache
+RUN mkdir /opt
+ADD dcache-${DCACHE_VERSION}.tar.gz /opt
+
+# Run dCache as user 'dcache'
+RUN addgroup dcache && adduser -S -G dcache dcache
 
 # fix liquibase
-RUN rm /usr/share/dcache/classes/liquibase-core-*.jar
-COPY liquibase-core-3.4.2.jar /usr/share/dcache/classes/liquibase-core-3.4.2.jar
+RUN rm ${DCACHE_INSTALL_DIR}/share/classes/liquibase-core-*.jar
+COPY liquibase-core-3.5.3.jar ${DCACHE_INSTALL_DIR}/share/classes/liquibase-core-3.5.3.jar
+
 
 # add external files into container at the build time
-COPY dcache.conf /etc/dcache/dcache.conf
-COPY run.sh /etc/dcache/run.sh
+COPY dcache.conf ${DCACHE_INSTALL_DIR}/etc/dcache.conf
+COPY docker-layout.conf ${DCACHE_INSTALL_DIR}/etc/layouts/docker-layout.conf
+COPY exports ${DCACHE_INSTALL_DIR}/etc/exports
+COPY authorized_keys2 ${DCACHE_INSTALL_DIR}/etc/admin/authorized_keys2
+COPY run.sh /run.sh
+
+# where we store the data
+RUN mkdir /pool
+
+# adjust permissions
+RUN chown -R dcache:dcache ${DCACHE_INSTALL_DIR}/var
+RUN chown -R dcache:dcache /pool
+
 
 # the data log files must survive container restarts
-VOLUME /var/log/dcache
-
-# prepare space for pool
-RUN mkdir /var/lib/dcache/pool && chown dcache:dcache /var/lib/dcache/pool
-VOLUME /var/lib/dcache/pool
+VOLUME ${DCACHE_INSTALL_DIR}/var
+VOLUME /pool
 
 # expose TCP ports for network services
-EXPOSE 2288 22125 2049
+EXPOSE 2288 22125 2049 32049 22224
 
-ENTRYPOINT ["/etc/dcache/run.sh"]
+ENTRYPOINT ["/run.sh"]
+
+# generate ssh keys
+RUN apk --update add openssh
+RUN ssh-keygen -t rsa -b 2048 -N '' -f ${DCACHE_INSTALL_DIR}/etc/admin/ssh_host_rsa_key
+RUN chown dcache:dcache ${DCACHE_INSTALL_DIR}/etc/admin/ssh_host_rsa_key
 
 # run as user dcache, which is created by rpm
 USER dcache
 
 # default domain
-CMD ["dCacheDomain"]
+CMD ["core"]
