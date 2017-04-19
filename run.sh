@@ -6,14 +6,21 @@ then
   exit 1
 fi
 
-
 DOMAIN=$1
-if [ -t 0 ]
-then
-  LOG=/dev/stdout
-else
-  LOG=${DCACHE_INSTALL_DIR}/var/log/${DOMAIN}.log
-fi
+
+# wait for postgres to become online
+echo -n "Wating for postress to become online"
+while true
+do 
+nc db-host 5432 < /dev/null > /dev/null 2>&1
+if [ $? = 0 ]; then
+  echo " Done"
+  break
+fi 
+echo -n "."
+sleep 1
+done
+
 
 DCACHE_HOME=${DCACHE_INSTALL_DIR}
 export CLASSPATH=${DCACHE_HOME}/share/classes/*
@@ -41,4 +48,4 @@ ASPECT_AGENT=`ls ${DCACHE_HOME}/share/classes/aspectjweaver-*.jar`
 	-Ddcache.home=${DCACHE_HOME} \
 	-Ddcache.paths.defaults=${DCACHE_HOME}/share/defaults \
 	-Dorg.dcache.net.localaddresses=${LOCALADDRESS} \
-	org.dcache.boot.BootLoader start ${DOMAIN} > ${LOG} 2>&1
+	org.dcache.boot.BootLoader start ${DOMAIN}
