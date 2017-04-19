@@ -1,0 +1,21 @@
+version: '2'
+services:
+  pg:
+    image: postgres
+    environment:
+    - POSTGRES_DB=chimera
+    - POSTGRES_PASSWORD=let-me-in
+
+  dc31:
+    depends_on:
+    - pg
+    image: local/dcache-3.1
+    environment:
+    - LOCALADDRESS=<local.ip.address>
+    links:
+    - pg:db-host
+    ports:
+    - "2049:2049"
+    - "22224:22224"
+    - "32049:32049"
+    
