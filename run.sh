@@ -40,4 +40,5 @@ ASPECT_AGENT=`ls ${DCACHE_HOME}/share/classes/aspectjweaver-*.jar`
 	-Djava.awt.headless=true -DwantLog4jSetup=n \
 	-Ddcache.home=${DCACHE_HOME} \
 	-Ddcache.paths.defaults=${DCACHE_HOME}/share/defaults \
+	-Dorg.dcache.net.localaddresses=${LOCALADDRESS} \
 	org.dcache.boot.BootLoader start ${DOMAIN} > ${LOG} 2>&1
