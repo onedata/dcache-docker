@@ -18,4 +18,6 @@ services:
     - "2049:2049"
     - "22224:22224"
     - "32049:32049"
+    volumes:
+    - ${HOME}/.ssh/authorized_keys:/authorized_keys2:ro
     

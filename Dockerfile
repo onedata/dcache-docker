@@ -26,7 +26,7 @@ COPY liquibase-core-3.5.3.jar ${DCACHE_INSTALL_DIR}/share/classes/liquibase-core
 COPY dcache.conf ${DCACHE_INSTALL_DIR}/etc/dcache.conf
 COPY docker-layout.conf ${DCACHE_INSTALL_DIR}/etc/layouts/docker-layout.conf
 COPY exports ${DCACHE_INSTALL_DIR}/etc/exports
-COPY authorized_keys2 ${DCACHE_INSTALL_DIR}/etc/admin/authorized_keys2
+RUN  ln -s /authorized_keys ${DCACHE_INSTALL_DIR}/etc/admin/authorized_keys2
 COPY run.sh /run.sh
 
 # where we store the data
@@ -51,7 +51,7 @@ RUN apk --update add openssh
 RUN ssh-keygen -t rsa -b 2048 -N '' -f ${DCACHE_INSTALL_DIR}/etc/admin/ssh_host_rsa_key
 RUN chown dcache:dcache ${DCACHE_INSTALL_DIR}/etc/admin/ssh_host_rsa_key
 
-# run as user dcache, which is created by rpm
+# run as user dcache
 USER dcache
 
 # default domain

@@ -22,6 +22,11 @@ By default, **core** domain is stared.
 
 
 The volume **/pool** allows to percist dcache pool's data on conrainer restarts.
+To access dCache admin interface via ssh, you need to provide **/authorized_keys** as
+external volume:
+```
+$ docker run -v ${HOME}/.ssh/authorized_keys:/authorized_keys:ro ...
+```
 
 
 Running provided docker-compose
@@ -34,3 +39,4 @@ pool.
 ```
 $ docker-compose up -d
 ```
+
