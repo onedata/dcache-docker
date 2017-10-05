@@ -6,10 +6,10 @@ services:
     - POSTGRES_DB=chimera
     - POSTGRES_PASSWORD=let-me-in
 
-  dc31:
+  dc3:
     depends_on:
     - pg
-    image: local/dcache-3.1
+    image: local/dcache-3.2
     environment:
     - LOCALADDRESS=<local.ip.address>
     links:
