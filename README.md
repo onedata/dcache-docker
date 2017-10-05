@@ -36,7 +36,17 @@ The provided **docker-compose.yml** files allows to start minimal dCache with a 
 Update the config to adjust to your envirnoment, like hosts external IP which will be advertised by dCache
 pool.
 
+The **.env** file:
+```
+HUMIO_DATASPACE=humio space
+HUMIO_TOKEN=humio token for the space
+
+LOCAL_ADDRESS=1.2.3.4
+AUTHORIZED_KEYS=/path/to/key/file
+```
+
 ```
 $ docker-compose up -d
 ```
+
 
