@@ -1,5 +1,5 @@
 # Minimalistic Java image
-FROM alpine:3.4
+FROM alpine:3.6
 MAINTAINER dCache "https://www.dcache.org"
 
 ARG VERSION
