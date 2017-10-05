@@ -1,5 +1,25 @@
+#
+#  needs .env file with:
+#  - LOCAL_ADDRESS : the ip address of the docker host
+#  - HUMIO_DATASPACE : humio data space
+#  - HUMIO_TOKEN : humio injest token assosiated with the data space
+#  - AUTHORIZED_KEYS: location of SSH authorized_keys files
+#
+
 version: '2'
 services:
+  packetbeat:
+    image: docker.elastic.co/beats/packetbeat:5.6.2
+    cap_add:
+    - NET_RAW
+    - NET_ADMIN
+    network_mode: host
+    restart: always
+    command: >
+      packetbeat -e
+        -E output.elasticsearch.hosts='["https://go.humio.com:443/api/v1/dataspaces/${HUMIO_DATASPACE}/ingest/elasticsearch"]'
+        -E output.elasticsearch.username=${HUMIO_TOKEN}
+        -E packetbeat.protocols.nfs.ports='[2049]'
   pg:
     image: postgres
     environment:
@@ -9,9 +29,10 @@ services:
   dc3:
     depends_on:
     - pg
+    - packetbeat
     image: local/dcache-3.2
     environment:
-    - LOCALADDRESS=<local.ip.address>
+    - LOCALADDRESS=${LOCAL_ADDRESS}
     links:
     - pg:db-host
     ports:
@@ -19,5 +40,4 @@ services:
     - "22224:22224"
     - "32049:32049"
     volumes:
-    - ${HOME}/.ssh/authorized_keys:/authorized_keys2:ro
-    
+    - ${AUTHORIZED_KEYS}:/authorized_keys2:ro
