@@ -32,11 +32,14 @@ services:
     - POSTGRES_PASSWORD=let-me-in
 
   dc3:
+    build:
+        context: .
+        args:
+            - VERSION=3.2.0
     depends_on:
     - pg
     - packetbeat
     - zk
-    image: local/dcache-3.2
     environment:
     - LOCALADDRESS=${LOCAL_ADDRESS}
     links:
