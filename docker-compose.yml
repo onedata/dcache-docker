@@ -20,6 +20,11 @@ services:
         -E output.elasticsearch.hosts='["https://go.humio.com:443/api/v1/dataspaces/${HUMIO_DATASPACE}/ingest/elasticsearch"]'
         -E output.elasticsearch.username=${HUMIO_TOKEN}
         -E packetbeat.protocols.nfs.ports='[2049]'
+
+  zk:
+    image: zookeeper
+    restart: always
+
   pg:
     image: postgres
     environment:
@@ -30,11 +35,13 @@ services:
     depends_on:
     - pg
     - packetbeat
+    - zk
     image: local/dcache-3.2
     environment:
     - LOCALADDRESS=${LOCAL_ADDRESS}
     links:
     - pg:db-host
+    - zk:zk-host
     ports:
     - "2049:2049"
     - "22224:22224"
