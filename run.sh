@@ -29,7 +29,6 @@ export CLASSPATH=${DCACHE_HOME}/share/classes/*
 ASPECT_AGENT=`ls ${DCACHE_HOME}/share/classes/aspectjweaver-*.jar`
 
 /usr/bin/java -server \
-	-Xmx512m -XX:MaxDirectMemorySize=512m \
 	-Dsun.net.inetaddr.ttl=1800 \
 	-Dorg.globus.tcp.port.range=20000,25000 \
 	-Dorg.dcache.dcap.port=0 \

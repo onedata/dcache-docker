@@ -28,6 +28,7 @@ external volume:
 $ docker run -v ${HOME}/.ssh/authorized_keys:/authorized_keys:ro ...
 ```
 
+Use **--memory** option to control JVM's heap size.
 
 Running provided docker-compose
 -------------------------------
