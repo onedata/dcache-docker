@@ -30,6 +30,11 @@ $ docker run -v ${HOME}/.ssh/authorized_keys:/authorized_keys:ro ...
 
 Use **--memory** option to control JVM's heap size.
 
+JMX
+---
+
+The JVM runnig dCache is configured for JMX monitoring on the port **7771**.
+
 Running provided docker-compose
 -------------------------------
 

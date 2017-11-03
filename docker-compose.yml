@@ -49,5 +49,6 @@ services:
     - "2049:2049"
     - "22224:22224"
     - "32049:32049"
+    - "7771:7771"
     volumes:
     - ${AUTHORIZED_KEYS}:/authorized_keys2:ro

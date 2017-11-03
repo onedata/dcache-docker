@@ -28,6 +28,8 @@ export CLASSPATH=${DCACHE_HOME}/share/classes/*
 # we hope that there is only one agent file and it the right one
 ASPECT_AGENT=`ls ${DCACHE_HOME}/share/classes/aspectjweaver-*.jar`
 
+JMX_PORT=7771
+
 /usr/bin/java -server \
 	-Dsun.net.inetaddr.ttl=1800 \
 	-Dorg.globus.tcp.port.range=20000,25000 \
@@ -47,4 +49,7 @@ ASPECT_AGENT=`ls ${DCACHE_HOME}/share/classes/aspectjweaver-*.jar`
 	-Ddcache.home=${DCACHE_HOME} \
 	-Ddcache.paths.defaults=${DCACHE_HOME}/share/defaults \
 	-Dorg.dcache.net.localaddresses=${LOCALADDRESS} \
+	-Dcom.sun.management.jmxremote.port=${JMX_PORT} \
+	-Dcom.sun.management.jmxremote.ssl=false \
+	-Dcom.sun.management.jmxremote.authenticate=false \
 	org.dcache.boot.BootLoader start ${DOMAIN}
