@@ -31,24 +31,37 @@ services:
     - POSTGRES_DB=chimera
     - POSTGRES_PASSWORD=let-me-in
 
-  dc3:
+  s3:
+    image: minio/minio
+    command: minio server /data
+    ports:
+    - 9000:9000
+    volumes:
+    - ./access_key:/run/secrets/access_key
+    - ./secret_key:/run/secrets/secret_key
+
+  dcache:
     build:
         context: .
         args:
-            - VERSION=3.2.0
+            - VERSION=3.2.9
     depends_on:
     - pg
     - packetbeat
     - zk
+    - s3
     environment:
     - LOCALADDRESS=${LOCAL_ADDRESS}
     links:
     - pg:db-host
     - zk:zk-host
+    - s3:s3-host
     ports:
     - "2049:2049"
     - "22224:22224"
     - "32049:32049"
     - "7771:7771"
     volumes:
-    - ${AUTHORIZED_KEYS}:/authorized_keys2:ro
+    - ./authorized_keys:/authorized_keys:ro
+    - ./local:/usr/local
+    - ./pool-setup:/pool/setup
