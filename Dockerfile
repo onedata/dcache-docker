@@ -17,6 +17,11 @@ ADD dcache-${DCACHE_VERSION}.tar.gz /opt
 # Run dCache as user 'dcache'
 RUN addgroup dcache && adduser -S -G dcache dcache
 
+# fix liquibase
+RUN rm ${DCACHE_INSTALL_DIR}/share/classes/liquibase-core-*.jar
+COPY liquibase-core-3.5.3.jar ${DCACHE_INSTALL_DIR}/share/classes/liquibase-core-3.5.3.jar
+
+
 # add external files into container at the build time
 COPY dcache.conf ${DCACHE_INSTALL_DIR}/etc/dcache.conf
 COPY docker-layout.conf ${DCACHE_INSTALL_DIR}/etc/layouts/docker-layout.conf
