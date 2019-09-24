@@ -1,67 +1,32 @@
-#
-#  needs .env file with:
-#  - LOCAL_ADDRESS : the ip address of the docker host
-#  - HUMIO_DATASPACE : humio data space
-#  - HUMIO_TOKEN : humio injest token assosiated with the data space
-#  - AUTHORIZED_KEYS: location of SSH authorized_keys files
-#
-
 version: '2'
 services:
-  packetbeat:
-    image: docker.elastic.co/beats/packetbeat:5.6.2
-    cap_add:
-    - NET_RAW
-    - NET_ADMIN
-    network_mode: host
-    restart: always
-    command: >
-      packetbeat -e
-        -E output.elasticsearch.hosts='["https://go.humio.com:443/api/v1/dataspaces/${HUMIO_DATASPACE}/ingest/elasticsearch"]'
-        -E output.elasticsearch.username=${HUMIO_TOKEN}
-        -E packetbeat.protocols.nfs.ports='[2049]'
-
-  zk:
-    image: zookeeper
-    restart: always
-
   pg:
-    image: postgres
+    image: postgres:10.7
+    network_mode: host
     environment:
     - POSTGRES_DB=chimera
     - POSTGRES_PASSWORD=let-me-in
-
-  s3:
-    image: minio/minio
-    command: minio server /data
-    ports:
-    - 9000:9000
-    volumes:
-    - ./access_key:/run/secrets/access_key
-    - ./secret_key:/run/secrets/secret_key
-
+    command: >
+      /usr/bin/env bash -c "docker-entrypoint.sh postgres &
+        while true; do timeout 1 cat < /dev/null > /dev/tcp/localhost/5432 2>&1 ; if [ $$? = 0 ]; then break ; fi ; sleep 2 ; echo 'Database not ready!' ; done ; 
+        echo 'xInitializing dCache database.' ;
+        createuser -U postgres --no-superuser --no-createrole --createdb chimera ;
+        createuser -U postgres --no-superuser --no-createrole --createdb dcache ;
+        createdb -U dcache dcache ;
+        createdb -O dcache -U postgres alarms ;
+        createdb -O dcache -U postgres billing ;
+        createdb -O dcache -U postgres pinmanager ;
+        createdb -O dcache -U postgres spacemanager ;
+        createdb -O dcache -U postgres transfermanagers ;
+        createdb -O dcache -U postgres transfermanager ;
+        createdb -O dcache -U postgres srm ;
+        createdb -O dcache -U postgres replica ;
+        createdb -O dcache -U postgres replicas ;
+        echo 'dCache database initialized.' ;
+        touch /monitor/postgres-ready ;
+        sleep 400000 ;"
   dcache:
+    image: onedata/dcache-docker
+    network_mode: host
     build:
         context: .
-        args:
-            - VERSION=3.2.9
-    depends_on:
-    - pg
-    - packetbeat
-    - zk
-    - s3
-    environment:
-    - LOCALADDRESS=${LOCAL_ADDRESS}
-    links:
-    - pg:db-host
-    - zk:zk-host
-    - s3:s3-host
-    ports:
-    - "2049:2049"
-    - "22224:22224"
-    - "32049:32049"
-    - "7771:7771"
-    volumes:
-    - ./authorized_keys:/authorized_keys:ro
-    - ./local:/usr/local
-    - ./pool-setup:/pool/setup

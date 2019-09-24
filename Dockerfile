@@ -1,58 +1,37 @@
-# Minimalistic Java image
-FROM alpine:3.7
-MAINTAINER dCache "https://www.dcache.org"
+FROM ubuntu:18.04
 
-ARG VERSION
-# dCache version placeholder
-ENV DCACHE_VERSION=${VERSION}
-ENV DCACHE_INSTALL_DIR=/opt/dcache-${DCACHE_VERSION}
+# dCache version
+ENV DCACHE_VERSION=5.0.9-1
 
-# Add JRE
-RUN apk --update add openjdk8-jre
+# Add dependencies
+RUN set -eux; \
+  apt-get update; \
+  apt-get install -y --no-install-recommends openjdk-8-jre-headless ssh-client ssl-cert rsyslog; \
+  rm -rf /var/lib/apt/lists/*
 
 # Add dCache
-RUN mkdir /opt
-ADD dcache-${DCACHE_VERSION}.tar.gz /opt
+ADD dcache_${DCACHE_VERSION}_all.deb /
+RUN set -eux; \
+  dpkg -i /dcache_${DCACHE_VERSION}_all.deb; \
+  rm dcache_${DCACHE_VERSION}_all.deb
 
-# Run dCache as user 'dcache'
-RUN addgroup dcache && adduser -S -G dcache dcache
-
-# fix liquibase
-RUN rm ${DCACHE_INSTALL_DIR}/share/classes/liquibase-core-*.jar
-COPY liquibase-core-3.5.3.jar ${DCACHE_INSTALL_DIR}/share/classes/liquibase-core-3.5.3.jar
-
-
-# add external files into container at the build time
-COPY dcache.conf ${DCACHE_INSTALL_DIR}/etc/dcache.conf
-COPY docker-layout.conf ${DCACHE_INSTALL_DIR}/etc/layouts/docker-layout.conf
-COPY exports ${DCACHE_INSTALL_DIR}/etc/exports
-RUN  ln -s /authorized_keys ${DCACHE_INSTALL_DIR}/etc/admin/authorized_keys2
+# Add external files into container at the build time
+COPY dcache.conf /etc/dcache/dcache.conf
+COPY webdav-layout.conf /etc/dcache/layouts/webdav-layout.conf
 COPY run.sh /run.sh
 
-# where we store the data
-RUN mkdir /pool
+# Configure dcache gplazma and create pool directory
+RUN set -eux; \
+  mv /etc/dcache/gplazma.conf /etc/dcache/gplazma.conf.back ; \
+  touch /etc/dcache/gplazma.conf; \
+  mkdir /pool1; \
+  chown -R dcache:dcache /pool1
 
-# adjust permissions
-RUN chown -R dcache:dcache ${DCACHE_INSTALL_DIR}/var
-RUN chown -R dcache:dcache /pool
+# The data log files must survive container restarts
+VOLUME /var/log/dcache
+VOLUME /pool1
 
-
-# the data log files must survive container restarts
-VOLUME ${DCACHE_INSTALL_DIR}/var
-VOLUME /pool
-
-# expose TCP ports for network services
-EXPOSE 2288 22125 2049 32049 22224
+# Expose TCP ports for network services
+EXPOSE 2288 22125 2049 32049 22224 2181 2880
 
 ENTRYPOINT ["/run.sh"]
-
-# generate ssh keys
-RUN apk --update add openssh
-RUN ssh-keygen -t rsa -b 2048 -N '' -f ${DCACHE_INSTALL_DIR}/etc/admin/ssh_host_rsa_key
-RUN chown dcache:dcache ${DCACHE_INSTALL_DIR}/etc/admin/ssh_host_rsa_key
-
-# run as user dcache
-USER dcache
-
-# default domain
-CMD ["core"]

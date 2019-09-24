@@ -1,58 +1,18 @@
-Running dCache in a container
-=============================
+# dCache Docker Container
 
-Howto build
------------
+Simple containerized [dCache](https://www.dcache.org) configuration with WebDAV enabled. The installation procedure in the container follows [dCache 5.0 book](https://www.dcache.org/manuals/Book-5.0).
+dCache version used is specified in the *Dockerfile*.
 
-The dockerized dCache uses tar-based distribution to build the docker image.
-For example, to built cotainer to run version 3.1.2 you will need to copy
-dcache-3.1.2.tar file into current directory and run __docker run__ command:
+To build: make image
 
-```
-$ docker build -t local/dcache-3.1 --build-arg=VERSION=3.1.2 .
-```
+To run: docker-compose up
 
+To publish: make push
 
-Howto run
----------
+## Word of Warning
 
-The dockerized dCache on startup will use **/etc/dcache/layouts/docker-layout.conf** file.
-The argument to *'docker run'* command can the the domain name which have to be started.
-By default, **core** domain is stared.
+The attached *docker-compose* is a dirty example to show that this configuration works. During startup it will produce some errors before actually correctly initializing postgres. The `network_mode: host` is used not to have to configure postgres authentication, as by default it trusts connections that come from the localhost. WebDAV also takes about 2 minutes to start after the container reports as running. Be patient. Pull requests are welcome!
 
+## dCache on Kubernetes
 
-The volume **/pool** allows to percist dcache pool's data on conrainer restarts.
-To access dCache admin interface via ssh, you need to provide **/authorized_keys** as
-external volume:
-```
-$ docker run -v ${HOME}/.ssh/authorized_keys:/authorized_keys:ro ...
-```
-
-Use **--memory** option to control JVM's heap size.
-
-JMX
----
-
-The JVM runnig dCache is configured for JMX monitoring on the port **7771**.
-
-Running provided docker-compose
--------------------------------
-
-The provided **docker-compose.yml** files allows to start minimal dCache with a single pool and service.
-Update the config to adjust to your envirnoment, like hosts external IP which will be advertised by dCache
-pool.
-
-The **.env** file:
-```
-HUMIO_DATASPACE=humio space
-HUMIO_TOKEN=humio token for the space
-
-LOCAL_ADDRESS=1.2.3.4
-AUTHORIZED_KEYS=/path/to/key/file
-```
-
-```
-$ docker-compose up -d
-```
-
-
+This image is used in [helm chart](https://github.com/onedata/charts/stable/volume-dcache) as part of Onedata k8s deployments.

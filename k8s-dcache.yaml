@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dcache
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - k8s-cyfronet-1-node-10
+  containers:
+  - image: onedata/dcache-docker:fd32dcf
+    command:
+      - "/bin/sh"
+      - "-c"
+      - >
+        while [ ! -f /monitor/postgres-ready ] ; do sleep 2 ; done ;
+        dcache database update ;
+        dcache start ;
+        dcache status ;
+        dcache ports ;
+        lock=$(dcache property dcache.paths.lock.file) ;
+        while [ -f "$lock" ]; do sleep 10 ; done ;
+    imagePullPolicy: Always
+    name: dcache
+    imagePullPolicy: Always
+    ports:
+      - name: a
+        containerPort: 2049
+        protocol: TCP
+      - name: h
+        containerPort: 80
+        protocol: TCP
+      - name: hs
+        containerPort: 443
+        protocol: TCP
+      - name: b
+        containerPort: 22224
+        protocol: TCP
+      - name: c
+        containerPort: 32049
+        protocol: TCP
+      - name: d
+        containerPort: 7771
+        protocol: TCP
+      - name: webdav
+        containerPort: 2880
+        protocol: TCP
+    volumeMounts:
+      - mountPath: /monitor
+        name: monitor
+    readinessProbe:
+      tcpSocket:
+        port: 2880
+  - image: postgres:10.7
+    name: postgres
+    imagePullPolicy: Always
+    lifecycle:
+      postStart:
+        exec:
+          command:
+            - "sh"
+            - "-c"
+            - >
+              while true; do timeout 1 bash -c 'cat < /dev/null > /dev/tcp/localhost/5432' 2>&1 ; if [ $? = 0 ]; then break ; fi ; done ; 
+              createuser -U postgres --no-superuser --no-createrole --createdb chimera ;
+              createuser -U postgres --no-superuser --no-createrole --createdb dcache ;
+              createdb -U dcache dcache ;
+              createdb -O dcache -U postgres alarms ;
+              createdb -O dcache -U postgres chimera ;
+              createdb -O dcache -U postgres billing ;
+              createdb -O dcache -U postgres pinmanager ;
+              createdb -O dcache -U postgres spacemanager ;
+              createdb -O dcache -U postgres transfermanagers ;
+              createdb -O dcache -U postgres transfermanager ;
+              createdb -O dcache -U postgres srm ;
+              createdb -O dcache -U postgres replica ;
+              createdb -O dcache -U postgres replicas ;
+              touch /monitor/postgres-ready ;
+    volumeMounts:
+      - mountPath: /monitor
+        name: monitor
+  volumes:
+    - name: monitor
+      emptyDir: {}

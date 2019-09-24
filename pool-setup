@@ -1,2 +1,0 @@
-hsm create osm s3 -command=/usr/local/bin/s3hsm -s3bucket=hsm -s3config=/usr/local/etc/s3hsm.yml -c:puts=5 -c:gets=5 -c:removes=5
-
